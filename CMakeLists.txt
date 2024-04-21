@@ -1,23 +1,22 @@
 cmake_minimum_required(VERSION 3.10)
+project(FileIOUsingLiburing)
 
-project(iouring_project)
-
-# 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 添加源文件
-file(GLOB SRC_FILES "src/*.cpp")
+# Add executable for main program
+add_executable(FileIOUsingLiburing main.cpp EventLoop.cpp Channel.cpp File.cpp)
 
-# 添加头文件路径
-include_directories(include)
+# Link liburing
+find_library(LIBURING_LIBRARIES NAMES uring PATHS /usr/local/lib /usr/lib)
+if (LIBURING_LIBRARIES)
+    target_link_libraries(FileIOUsingLiburing ${LIBURING_LIBRARIES})
+else()
+    message(FATAL_ERROR "liburing library not found")
+endif()
 
-# 添加可执行文件
-add_executable(iouring_test ${SRC_FILES})
+# Add executable for tests
+add_executable(FileIOTest FileIOTest.cpp EventLoop.cpp File.cpp Channel.cpp)
 
-# 链接IO ring和Event Loop
-target_link_libraries(iouring_test io_uring)
-
-# 添加测试
-enable_testing()
-add_subdirectory(test)
+# Link liburing and Google Test
+find_package(GTest REQUIRED)
+target_link_libraries(FileIOTest ${LIBURING_LIBRARIES} ${GTEST_BOTH_LIBRARIES})
